@@ -50,6 +50,7 @@ namespace CamSliderPiControl
             Windows.Storage.ApplicationDataContainer localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
             Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
 
+            //Some sample config getters from my other project.  A reminder to myself...
             //enableWingsCheckbox.IsChecked = GetConfig_Bool(localSettings, "EnableWings");
             //enableHeadCheckbox.IsChecked = GetConfig_Bool(localSettings, "EnableHead");
             //enableLeftEyeCheckbox.IsChecked = GetConfig_Bool(localSettings, "EnableLeftEye");
