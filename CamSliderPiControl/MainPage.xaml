@@ -1,0 +1,46 @@
+﻿<Page
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:CamSliderPiControl"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:Custom="using:Microsoft.UI.Xaml.Controls"
+    x:Class="CamSliderPiControl.MainPage"
+    mc:Ignorable="d"
+    Background="Black">
+
+    <Grid x:Name="mainBgGrid" Background="White" Width="800" Height="480">
+        <Pivot x:Name="mainPivot" Title="Slider Control" FontSize="7" Background="DarkBlue" Foreground="White" Grid.ColumnSpan="2">
+            <PivotItem x:Name="controlPivotItem" Header="Control" Foreground="White">
+                <Grid x:Name="controlGrid">
+                    <Slider x:Name="sliderPositionSlider" HorizontalAlignment="Center" Margin="0,329,0,0" VerticalAlignment="Top" Width="616" RenderTransformOrigin="0.48,4.438" IsDirectionReversed="True"/>
+                    <Slider x:Name="panSlider" HorizontalAlignment="Left" Margin="375,253,0,0" VerticalAlignment="Top" Width="206"/>
+                    <Slider x:Name="tiltSlider" HorizontalAlignment="Left" Margin="687,59,0,0" VerticalAlignment="Top" Width="33" Orientation="Vertical" Height="193"/>
+                    <Slider x:Name="speedSlider" HorizontalAlignment="Left" Margin="80,202,0,0" VerticalAlignment="Top" Width="34" Orientation="Vertical" Height="99"/>
+                    <TextBlock x:Name="speedLabel" HorizontalAlignment="Left" Margin="64,308,0,0" Text="Speed" TextWrapping="Wrap" VerticalAlignment="Top" Height="17" Width="46" TextAlignment="Center" FontSize="12"/>
+                    <TextBlock x:Name="tiltLabel" HorizontalAlignment="Left" Margin="680,261,0,0" Text="Tilt" TextWrapping="Wrap" VerticalAlignment="Top" Height="17" Width="46" TextAlignment="Center" FontSize="12"/>
+                    <TextBlock x:Name="panLabel" HorizontalAlignment="Left" Margin="448,269,0,0" Text="Pan" TextWrapping="Wrap" VerticalAlignment="Top" Height="17" Width="46" TextAlignment="Center" FontSize="12"/>
+                    <TextBlock x:Name="sliderLabel" HorizontalAlignment="Left" Margin="358,348,0,0" Text="Slider" TextWrapping="Wrap" VerticalAlignment="Top" Height="17" Width="46" TextAlignment="Center" FontSize="12"/>
+                    <Button x:Name="storeButton" Content="Store" Foreground="White" Margin="312,10,0,0" VerticalAlignment="Top" Height="47" Width="121"/>
+                    <Button x:Name="prevButton" Content="Previous" Foreground="White" Margin="254,82,0,0" VerticalAlignment="Top" Height="46" Width="94"/>
+                    <Button x:Name="nextButton" Content="Next" Foreground="White" Margin="388,82,0,0" VerticalAlignment="Top" Height="46" Width="94"/>
+                    <Button x:Name="claerButton" Content="Clear" Foreground="White" Margin="312,156,0,0" VerticalAlignment="Top" Height="47" Width="121"/>
+                    <Button x:Name="executeButton" Content="Execute" Foreground="White" Margin="523,28,0,0" VerticalAlignment="Top" Height="77" Width="137"/>
+                </Grid>
+            </PivotItem>
+            <PivotItem x:Name="manualMovePivotItem" Header="ManualStepper">
+                <Grid>
+                    <Button x:Name="autohomeButton" Content="Button" Margin="10,10,0,0" VerticalAlignment="Top" Click="autohomeButton_Click"/>
+                </Grid>
+            </PivotItem>
+            <PivotItem x:Name="setupPivotItem" Header="Setup">
+                <Grid>
+                    <TextBox HorizontalAlignment="Left" Margin="13,88,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Header="Pan Max Speed"/>
+                    <ComboBox Margin="10,10,0,0" Width="120" Header="Homing Mode"/>
+                </Grid>
+            </PivotItem>
+        </Pivot>
+        <TextBlock x:Name="statusLabel" HorizontalAlignment="Left" Margin="304,10,0,0" Text="(Status)" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White"/>
+
+    </Grid>
+</Page>
