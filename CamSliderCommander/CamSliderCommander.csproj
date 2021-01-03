@@ -126,7 +126,7 @@
     <Compile Include="SliderAxis.cs" />
     <Compile Include="SliderAxisPositionInfo.cs" />
     <Compile Include="SliderAxisSetupInfo.cs" />
-    <Compile Include="SliderControl.cs" />
+    <Compile Include="Isaac879SliderControl.cs" />
     <Compile Include="SliderControlBase.cs" />
     <Compile Include="SliderAxisState.cs" />
     <Compile Include="SocketManager.cs" />

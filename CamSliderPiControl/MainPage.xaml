@@ -30,7 +30,11 @@
             </PivotItem>
             <PivotItem x:Name="manualMovePivotItem" Header="ManualStepper">
                 <Grid>
-                    <Button x:Name="autohomeButton" Content="Button" Margin="10,10,0,0" VerticalAlignment="Top" Click="autohomeButton_Click"/>
+                    <Button x:Name="autohomeButton" Content="Auto-Home" Margin="10,10,0,0" VerticalAlignment="Top" Click="autohomeButton_Click" Height="48" Width="149"/>
+                    <Button x:Name="disconnectButton" Content="Disconnect" Margin="10,73,0,0" VerticalAlignment="Top" Click="disconnectButton_Click" Height="48" Width="149"/>
+                    <Button x:Name="getStatusButton" Content="Update from Slider" Margin="10,139,0,0" VerticalAlignment="Top" Click="getStatusButton_Click" Height="54" Width="149"/>
+                    <Button x:Name="slider100Button" Content="Slider to 100" Margin="10,289,0,0" VerticalAlignment="Top" Click="slider100Button_Click" Height="60" Width="140"/>
+                    <Button x:Name="sliderHomeButton" Content="Slider to Home" Margin="620,289,0,0" VerticalAlignment="Top" Click="sliderHomeButton_Click" Height="60" Width="133"/>
                 </Grid>
             </PivotItem>
             <PivotItem x:Name="setupPivotItem" Header="Setup">

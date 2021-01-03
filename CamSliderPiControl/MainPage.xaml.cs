@@ -130,5 +130,25 @@ namespace CamSliderPiControl
         {
             _slider.Recalibrate();
         }
+
+        private void disconnectButton_Click(object sender, RoutedEventArgs e)
+        {
+            _slider.DeviceComm.Disconnect("User requested a disconnect");
+        }
+
+        private void sliderHomeButton_Click(object sender, RoutedEventArgs e)
+        {
+            _slider.X_Axis.GoHomePosition();
+        }
+
+        private void slider100Button_Click(object sender, RoutedEventArgs e)
+        {
+            _slider.X_Axis.GotoPosition(100);
+        }
+
+        private void getStatusButton_Click(object sender, RoutedEventArgs e)
+        {
+            _slider.UpdateCurrentPositionFromDevice();
+        }
     }
 }
