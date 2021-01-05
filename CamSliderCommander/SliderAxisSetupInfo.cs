@@ -9,7 +9,7 @@ namespace CamSliderCommander
     public class SliderAxisSetupInfo
     {
         public int? HomePosition { get; set; }
-        public int? MaxSpeed { get; set; }
+        public double? MaxSpeed { get; set; }
         public int? MaxPosition { get; set; }
         public int? MinPosition { get; set; }
 

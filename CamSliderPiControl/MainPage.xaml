@@ -7,30 +7,54 @@
     xmlns:Custom="using:Microsoft.UI.Xaml.Controls"
     x:Class="CamSliderPiControl.MainPage"
     mc:Ignorable="d"
-    Background="Black">
+    Background="Black" Loaded="Page_Loaded">
 
     <Grid x:Name="mainBgGrid" Background="White" Width="800" Height="480">
+        <ProgressRing x:Name="LoadingIndicator" />
         <Pivot x:Name="mainPivot" Title="Slider Control" FontSize="7" Background="DarkBlue" Foreground="White" Grid.ColumnSpan="2">
             <PivotItem x:Name="controlPivotItem" Header="Control" Foreground="White">
                 <Grid x:Name="controlGrid">
-                    <Slider x:Name="sliderPositionSlider" HorizontalAlignment="Center" Margin="0,329,0,0" VerticalAlignment="Top" Width="616" RenderTransformOrigin="0.48,4.438" IsDirectionReversed="True"/>
-                    <Slider x:Name="panSlider" HorizontalAlignment="Left" Margin="375,253,0,0" VerticalAlignment="Top" Width="206"/>
-                    <Slider x:Name="tiltSlider" HorizontalAlignment="Left" Margin="687,59,0,0" VerticalAlignment="Top" Width="33" Orientation="Vertical" Height="193"/>
-                    <Slider x:Name="speedSlider" HorizontalAlignment="Left" Margin="80,202,0,0" VerticalAlignment="Top" Width="34" Orientation="Vertical" Height="99"/>
-                    <TextBlock x:Name="speedLabel" HorizontalAlignment="Left" Margin="64,308,0,0" Text="Speed" TextWrapping="Wrap" VerticalAlignment="Top" Height="17" Width="46" TextAlignment="Center" FontSize="12"/>
+                    <Slider x:Name="panSlider" HorizontalAlignment="Left" Margin="367,243,0,0" VerticalAlignment="Top" Width="182" RenderTransformOrigin="0.5,0.5" Maximum="45" Minimum="-45">
+                        <Slider.RenderTransform>
+                            <CompositeTransform ScaleX="2" ScaleY="2"/>
+                        </Slider.RenderTransform>
+                    </Slider>
+                    <Slider x:Name="tiltSlider" HorizontalAlignment="Left" Margin="713,52,0,0" VerticalAlignment="Top" Width="33" Orientation="Vertical" Height="160" RenderTransformOrigin="0.5,0.5" Maximum="45" Minimum="-20">
+                        <Slider.RenderTransform>
+                            <CompositeTransform ScaleX="2" ScaleY="1.5"/>
+                        </Slider.RenderTransform>
+                    </Slider>
+                    <Slider x:Name="sliderSlider" VerticalAlignment="Top" IsDirectionReversed="True" Height="31" Margin="47,308,274,0" Maximum="550">
+                        <Slider.RenderTransform>
+                            <CompositeTransform ScaleY="2" ScaleX="1.5"/>
+                        </Slider.RenderTransform>
+                    </Slider>
+                    <Slider x:Name="speedSlider" HorizontalAlignment="Left" Margin="60,0,0,0" VerticalAlignment="Center" Width="34" Orientation="Vertical" Height="130" RenderTransformOrigin="0.5,0.5" Minimum="1" Maximum="170" Value="50">
+                        <Slider.RenderTransform>
+                            <CompositeTransform ScaleX="2" ScaleY="1.5"/>
+                        </Slider.RenderTransform>
+                    </Slider>
+                    <TextBlock x:Name="speedLabel" HorizontalAlignment="Left" Margin="10,180,0,0" Text="Slider Speed for Moves" TextWrapping="Wrap" VerticalAlignment="Top" Height="68" Width="46" TextAlignment="Center" FontSize="12"/>
                     <TextBlock x:Name="tiltLabel" HorizontalAlignment="Left" Margin="680,261,0,0" Text="Tilt" TextWrapping="Wrap" VerticalAlignment="Top" Height="17" Width="46" TextAlignment="Center" FontSize="12"/>
                     <TextBlock x:Name="panLabel" HorizontalAlignment="Left" Margin="448,269,0,0" Text="Pan" TextWrapping="Wrap" VerticalAlignment="Top" Height="17" Width="46" TextAlignment="Center" FontSize="12"/>
                     <TextBlock x:Name="sliderLabel" HorizontalAlignment="Left" Margin="358,348,0,0" Text="Slider" TextWrapping="Wrap" VerticalAlignment="Top" Height="17" Width="46" TextAlignment="Center" FontSize="12"/>
-                    <Button x:Name="storeButton" Content="Store" Foreground="White" Margin="312,10,0,0" VerticalAlignment="Top" Height="47" Width="121"/>
-                    <Button x:Name="prevButton" Content="Previous" Foreground="White" Margin="254,82,0,0" VerticalAlignment="Top" Height="46" Width="94"/>
-                    <Button x:Name="nextButton" Content="Next" Foreground="White" Margin="388,82,0,0" VerticalAlignment="Top" Height="46" Width="94"/>
-                    <Button x:Name="claerButton" Content="Clear" Foreground="White" Margin="312,156,0,0" VerticalAlignment="Top" Height="47" Width="121"/>
-                    <Button x:Name="executeButton" Content="Execute" Foreground="White" Margin="523,28,0,0" VerticalAlignment="Top" Height="77" Width="137"/>
+                    <Button x:Name="storeButton" Content="Store" Foreground="White" Margin="312,10,0,0" VerticalAlignment="Top" Height="47" Width="121" Click="storeButton_Click"/>
+                    <Button x:Name="prevButton" Content="Previous" Foreground="White" Margin="254,82,0,0" VerticalAlignment="Top" Height="46" Width="94" Click="prevButton_Click"/>
+                    <Button x:Name="nextButton" Content="Next" Foreground="White" Margin="388,82,0,0" VerticalAlignment="Top" Height="46" Width="94" Click="nextButton_Click"/>
+                    <Button x:Name="clearButton" Content="Clear" Foreground="White" Margin="312,156,0,0" VerticalAlignment="Top" Height="47" Width="121" Click="clearButton_Click"/>
+                    <Button x:Name="executeButton" Content="Execute" Foreground="White" Margin="527,10,0,0" VerticalAlignment="Top" Height="77" Width="137" Click="executeButton_Click"/>
+                    <Button x:Name="getStatusButton1" Content="Update from Slider" Margin="88,10,0,0" VerticalAlignment="Top" Click="getStatusButton_Click" Height="54" Width="149"/>
+                    <Button x:Name="sendPositionsToSlider" Content="Send to Slider" Margin="88,82,0,0" VerticalAlignment="Top" Click="sendPositionsToSlider_Click" Height="54" Width="149"/>
+
                 </Grid>
             </PivotItem>
             <PivotItem x:Name="manualMovePivotItem" Header="ManualStepper">
                 <Grid>
-                    <Button x:Name="autohomeButton" Content="Button" Margin="10,10,0,0" VerticalAlignment="Top" Click="autohomeButton_Click"/>
+                    <Button x:Name="autohomeButton" Content="Auto-Home" Margin="10,10,0,0" VerticalAlignment="Top" Click="autohomeButton_Click" Height="48" Width="149"/>
+                    <Button x:Name="disconnectButton" Content="Disconnect" Margin="10,73,0,0" VerticalAlignment="Top" Click="disconnectButton_Click" Height="48" Width="149"/>
+                    <Button x:Name="getStatusButton" Content="Update from Slider" Margin="10,139,0,0" VerticalAlignment="Top" Click="getStatusButton_Click" Height="54" Width="149"/>
+                    <Button x:Name="slider100Button" Content="Slider to 100" Margin="10,289,0,0" VerticalAlignment="Top" Click="slider100Button_Click" Height="60" Width="140"/>
+                    <Button x:Name="sliderHomeButton" Content="Slider to Home" Margin="620,289,0,0" VerticalAlignment="Top" Click="sliderHomeButton_Click" Height="60" Width="133"/>
                 </Grid>
             </PivotItem>
             <PivotItem x:Name="setupPivotItem" Header="Setup">
@@ -39,8 +63,19 @@
                     <ComboBox Margin="10,10,0,0" Width="120" Header="Homing Mode"/>
                 </Grid>
             </PivotItem>
+            <PivotItem x:Name="debugPivotItem" Header="Debug">
+                <Grid>
+                    <TextBox x:Name="manualCommandTextBox" HorizontalAlignment="Left" Margin="10,20,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Header="Command" Width="291"/>
+                    <Button x:Name="sendManualCommandButton" Content="Send" Margin="326,43,0,0" VerticalAlignment="Top" Width="104" Click="sendManualCommandButton_Click"/>
+                </Grid>
+            </PivotItem>
+            <PivotItem x:Name="powerPivotItem" Header="Power">
+                <Grid>
+                    <Button x:Name="shutdownPiCommandButton" Content="Shutdown This Device" Margin="10,10,0,0" VerticalAlignment="Top" Width="174" Click="shutdownPiCommandButton_Click" Height="92"/>
+                </Grid>
+            </PivotItem>
         </Pivot>
-        <TextBlock x:Name="statusLabel" HorizontalAlignment="Left" Margin="304,10,0,0" Text="(Status)" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White"/>
+        <TextBlock x:Name="statusLabel" HorizontalAlignment="Left" Margin="166,10,0,0" Text="Welcome..." TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White"/>
 
     </Grid>
 </Page>

@@ -14,11 +14,6 @@ namespace CamSliderCommander
         public SliderAxisSetupInfo CurrentSetup { get; set; }
         public SliderAxisSetupInfo DesiredSetup { get; set; }
 
-        public int? MinPosition { get; set; }
-        public int? MaxPosition { get; set; }
-        public int? HomePosition { get; set; }
-
-        public string ASCII_CommandPrefix_ReportStatus { get; set; }
         public string ASCII_CommandPrefix_Enable { get; set; }
         public string ASCII_CommandPrefix_Position { get; set; }
         public string ASCII_CommandPrefix_MaxSpeed { get; set; }
@@ -36,6 +31,10 @@ namespace CamSliderCommander
 
         public SliderAxis(SocketManager socketManager) : base(socketManager)
         {
+            CurrentSetup = new SliderAxisSetupInfo();
+            DesiredSetup = new SliderAxisSetupInfo();
+            CurrentPosition = new SliderAxisPositionInfo();
+            DesiredPosition = new SliderAxisPositionInfo();
         }
         public SliderAxisState GetState()
         {
@@ -97,7 +96,7 @@ namespace CamSliderCommander
             return updated;
         }
 
-        private void Send_Set_MaxSpeed(int? maxSpeed)
+        private void Send_Set_MaxSpeed(double? maxSpeed)
         {
             string result = "";
             if (maxSpeed.HasValue && !String.IsNullOrEmpty(ASCII_CommandPrefix_MaxSpeed))
@@ -130,96 +129,93 @@ namespace CamSliderCommander
 
         private void UpdateCurrentSetupFromDevice()
         {
-            string report = DeviceComm.Send(ASCII_CommandPrefix_ReportStatus).Result;
+            string report = DeviceComm.Send(ASCII_Command_GetStatus).Result;
             UpdateCurrentSetupFromDevice(report);
         }
         private void UpdateCurrentSetupFromDevice(string report)
         {
-            CurrentSetup.AccelIncrementDelay = GetIntValueFromLineWithPrefix(ASCII_StatusPrefix_AccelIncrementDelay, report);
-            CurrentSetup.HomeOffset = GetIntValueFromLineWithPrefix(ASCII_StatusPrefix_HomeOffset, report);
-            CurrentSetup.Invert = GetBoolValueFromLineWithPrefix(ASCII_StatusPrefix_Invert, report);
-            CurrentSetup.MaxSpeed = GetIntValueFromLineWithPrefix(ASCII_StatusPrefix_MaxSpeed, report);
-            CurrentSetup.SystemEnabled = GetBoolValueFromLineWithPrefix(ASCII_StatusPrefix_StepersEnabled, report);
-
-            //Might as well...
-            UpdateCurrentPositionFromDevice(report);
-        }
-        private void UpdateCurrentPositionFromDevice()
-        {
-            string report = DeviceComm.Send(ASCII_CommandPrefix_ReportStatus).Result;
-            UpdateCurrentPositionFromDevice(report);
-        }
-        private void UpdateCurrentPositionFromDevice(string report)
-        {
-            int? val = GetIntValueFromLineWithPrefix(ASCII_CommandPrefix_Position, report);
-            if (val.HasValue) CurrentPosition.Position = val.Value;
-        }
-
-        public int? GetIntValueFromLineWithPrefix(string prefix, string report)
-        {
-            string val = GetValueStringFromLineWithPrefix(prefix, report);
-            
-            if (String.IsNullOrEmpty(val))
+            bool setupUpdated = false;
+            int? delay = GetIntValueFromLineWithPrefix(ASCII_StatusPrefix_AccelIncrementDelay, report);
+            if (delay.HasValue)
             {
-                return null;
-            }
-            else
-            {
-                int num = 0;
-                //get rid of degrees (0176 or Alt+ 248), ms/sec, etc
-                val = GetNumbers(val);
-                if (Int32.TryParse(val, out num))
+                if (CurrentSetup.AccelIncrementDelay != delay)
                 {
-                    return num;
-                }
-                else
-                {
-                    //Could not parse
-                    return null;
+                    setupUpdated = true;
+                    CurrentSetup.AccelIncrementDelay = delay;
                 }
             }
+
+            int? offset = GetIntValueFromLineWithPrefix(ASCII_StatusPrefix_HomeOffset, report);
+            if (offset.HasValue)
+            {
+                if (CurrentSetup.HomeOffset != offset)
+                {
+                    setupUpdated = true;
+                    CurrentSetup.HomeOffset = offset;
+                }
+            }
+
+            bool? invert = GetBoolValueFromLineWithPrefix(ASCII_StatusPrefix_Invert, report);
+            if (invert.HasValue)
+            {
+                if (CurrentSetup.Invert != invert)
+                {
+                    setupUpdated = true;
+                    CurrentSetup.Invert = invert;
+                }
+            }
+
+            int? maxSpeed = GetIntValueFromLineWithPrefix(ASCII_StatusPrefix_MaxSpeed, report);
+            if (maxSpeed.HasValue)
+            {
+                if (CurrentSetup.MaxSpeed != maxSpeed)
+                {
+                    setupUpdated = true;
+                    CurrentSetup.MaxSpeed = maxSpeed;
+                }
+            }
+
+            bool? enabled = GetBoolValueFromLineWithPrefix(ASCII_StatusPrefix_StepersEnabled, report);
+            if (enabled.HasValue)
+            {
+                if (!CurrentSetup.SystemEnabled.HasValue || CurrentSetup.SystemEnabled != enabled)
+                {
+                    setupUpdated = true;
+                    CurrentSetup.SystemEnabled = enabled;
+                }
+            }
+
+            if (setupUpdated)
+                FireDeviceInfoMessage("Setup updated");
+
         }
 
-        public bool? GetBoolValueFromLineWithPrefix(string prefix, string report)
+        //should ask for only one refresh from the Isaac device.
+        public override void UpdateCurrentPositionFromDevice()
         {
-            string val = GetValueStringFromLineWithPrefix(prefix, report);
-
-            if (String.IsNullOrEmpty(val))
+            if (!String.IsNullOrEmpty(ASCII_Command_GetStatus))
             {
-                return null;
-            }
-            else
-            {
-                //get rid of degrees (0176 or Alt+ 248), ms/sec, etc
-                val = GetNumbers(val);
-                if (val.Trim() == "1")
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                DeviceComm.Send(ASCII_Command_GetStatus);
             }
         }
 
-        private static string GetNumbers(string input)
+        private void  UpdateCurrentPositionFromDevice(string report)
         {
-            bool isNegative = input.Contains("-");
-            string val = new string(input.Where(c => char.IsDigit(c)).ToArray());
-            if (isNegative) val = "-" + val;
-
-            return val;
+            bool positionUpdated = false;
+            double? val = GetDoubleValueFromLineWithPrefix(ASCII_StatusPrefix_Position, report);
+            if (val.HasValue)
+            {
+                if (CurrentPosition.Position != val.Value)
+                {
+                    positionUpdated = true;
+                    CurrentPosition.Position = val.Value;
+                }
+            }
+            if (positionUpdated)
+                FirePositionChanged(val.Value);
         }
 
-        public string GetValueStringFromLineWithPrefix(string prefix, string report)
-        {
-            string[] lines = report.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-            string result = lines.SingleOrDefault(l => l.StartsWith(prefix));
-            result = result.Replace(":", "").Replace(" ", "");
-
-            return result;
-        }
+ 
 
         protected bool UpdateCurrenPositionWithDesired(bool suspendRefreshFromDevice = false)
         {
@@ -227,29 +223,42 @@ namespace CamSliderCommander
             if (DesiredPosition.Position != CurrentPosition.Position)
             {
                 //do the move
-                if (CurrentSetup.SystemEnabled.GetValueOrDefault())
-                {
-                    Send_Command_Position(DesiredPosition.Position);
-                }
-            }
-            if (moved && !suspendRefreshFromDevice)
-            {
-                UpdateCurrentPositionFromDevice();
+                moved = Send_Command_Position(DesiredPosition.Position, suspendRefreshFromDevice);
             }
             return moved;
         }
 
 
-        private void Send_Command_Position(int position)
+        private bool Send_Command_Position(double position, bool suspendRefreshFromDevice = false)
         {
-            throw new NotImplementedException();
+            //
+            if ((!CurrentSetup.SystemEnabled.HasValue || CurrentSetup.SystemEnabled.Value == true)  && !this.IsControlDisabled)
+            {
+                DeviceComm.Send(ASCII_CommandPrefix_Position + position.ToString());
+
+                //Not doing this until we can do the command queueing or blocking on the serial comm
+                //if(!suspendRefreshFromDevice)
+                //    UpdateCurrentPositionFromDevice();
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public override void ParseStatusMessage(string line)
+        {
+            UpdateCurrentSetupFromDevice(line);
+            UpdateCurrentPositionFromDevice(line);
         }
 
         public virtual bool CancelApplyState()
         {
             return false;
         }
-        public virtual void GotoPosition(int position)
+        public virtual void GotoPosition(double position, bool suspendRefreshFromDevice = false)
         {
             if (CurrentSetup.MaxPosition.HasValue && position > CurrentSetup.MaxPosition.Value)
                 DesiredPosition.Position = CurrentSetup.MaxPosition.Value;
@@ -257,8 +266,8 @@ namespace CamSliderCommander
                 DesiredPosition.Position = CurrentSetup.MinPosition.Value;
             else
                 DesiredPosition.Position = position;
-            
-            UpdateCurrenPositionWithDesired();
+
+            UpdateCurrenPositionWithDesired(suspendRefreshFromDevice);
         }
 
         public override bool Initialize()
@@ -268,27 +277,44 @@ namespace CamSliderCommander
 
         public override bool Enable()
         {
-            throw new NotImplementedException();
+            //Some devices might have independent stepper controls.  Override if neceesary
+            this.IsControlDisabled = false;
+            return true;
         }
 
         public override bool Disable()
         {
-            throw new NotImplementedException();
+            //Some devices might have independent stepper controls.  Override if neceesary
+            this.IsControlDisabled = true;
+            return true;
         }
 
         public override bool Shutdown()
         {
-            throw new NotImplementedException();
+            //no op for most devices.  Controller will handle it
+            return true;
         }
 
         public override void Recalibrate()
         {
-            throw new NotImplementedException();
+            //no op for most devices.  Controller will handle it
         }
 
-        public override void GoHomePosition()
+        public override void GoHomePosition(bool suspendRefreshFromDevice = false)
         {
-            throw new NotImplementedException();
+            GotoPosition(CurrentSetup.HomePosition.GetValueOrDefault(), suspendRefreshFromDevice);
         }
+
+        public override void HandleBatteryLowEvent()
+        {
+            //no op.  It's the controller's job
+        }
+
+        public override void ParseBatteryLevel(string line)
+        {
+            //no op.  It's the controller's job
+        }
+
+ 
     }
 }
