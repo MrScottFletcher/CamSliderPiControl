@@ -14,4 +14,4 @@ I wanted to add controller that was:
 
 I wrote a similar controller in Microsoft UWP user interface for a robot owl, so I had fewer remaining puzzles to solve than most folks. You can see that project here: https://github.com/MrScottFletcher/BigOwl
 
-STATUS: 2021-01-01: the master branch had the initial check-in (and very incomplete).  The "Button" on the ManualStepper page works, but that's it; none of the other controls work.
+STATUS: 2021-01-05: the master branch has the version that I demoed on YouTube https://youtu.be/O-RXUugMtgQ - It has it's quirks, but is a good start.  I did not implement the shutter or Timelapse functionality, and the Bluetooth comm manager is janky AF.  I'm done with this for a while.  In the meantime, I'm looking forward to seeing how you can improve it.  :)
