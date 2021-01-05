@@ -14,7 +14,6 @@ namespace CamSliderCommander
         public SliderAxisSetupInfo CurrentSetup { get; set; }
         public SliderAxisSetupInfo DesiredSetup { get; set; }
 
-        public string ASCII_CommandPrefix_ReportStatus { get; set; }
         public string ASCII_CommandPrefix_Enable { get; set; }
         public string ASCII_CommandPrefix_Position { get; set; }
         public string ASCII_CommandPrefix_MaxSpeed { get; set; }
@@ -97,7 +96,7 @@ namespace CamSliderCommander
             return updated;
         }
 
-        private void Send_Set_MaxSpeed(int? maxSpeed)
+        private void Send_Set_MaxSpeed(double? maxSpeed)
         {
             string result = "";
             if (maxSpeed.HasValue && !String.IsNullOrEmpty(ASCII_CommandPrefix_MaxSpeed))
@@ -130,7 +129,7 @@ namespace CamSliderCommander
 
         private void UpdateCurrentSetupFromDevice()
         {
-            string report = DeviceComm.Send(ASCII_CommandPrefix_ReportStatus).Result;
+            string report = DeviceComm.Send(ASCII_Command_GetStatus).Result;
             UpdateCurrentSetupFromDevice(report);
         }
         private void UpdateCurrentSetupFromDevice(string report)
@@ -194,16 +193,16 @@ namespace CamSliderCommander
         //should ask for only one refresh from the Isaac device.
         public override void UpdateCurrentPositionFromDevice()
         {
-            if (!String.IsNullOrEmpty(ASCII_CommandPrefix_ReportStatus))
+            if (!String.IsNullOrEmpty(ASCII_Command_GetStatus))
             {
-                DeviceComm.Send(ASCII_CommandPrefix_ReportStatus);
+                DeviceComm.Send(ASCII_Command_GetStatus);
             }
         }
 
         private void  UpdateCurrentPositionFromDevice(string report)
         {
             bool positionUpdated = false;
-            decimal? val = GetDecimalValueFromLineWithPrefix(ASCII_StatusPrefix_Position, report);
+            double? val = GetDoubleValueFromLineWithPrefix(ASCII_StatusPrefix_Position, report);
             if (val.HasValue)
             {
                 if (CurrentPosition.Position != val.Value)
@@ -216,132 +215,7 @@ namespace CamSliderCommander
                 FirePositionChanged(val.Value);
         }
 
-        public int? GetIntValueFromLineWithPrefix(string prefix, string report)
-        {
-            if (String.IsNullOrEmpty(prefix))
-            {
-                return null;
-            }
-            else
-            {
-                string val = GetValueStringFromLineWithPrefix(prefix, report);
-
-                if (String.IsNullOrEmpty(val))
-                {
-                    return null;
-                }
-                else
-                {
-                    int num = 0;
-                    //get rid of degrees (0176 or Alt+ 248), ms/sec, etc
-                    val = GetNumbers(val);
-                    if (Int32.TryParse(val, out num))
-                    {
-                        return num;
-                    }
-                    else
-                    {
-                        //Could not parse
-                        return null;
-                    }
-                }
-            }
-        }
-
-        public decimal? GetDecimalValueFromLineWithPrefix(string prefix, string report)
-        {
-            if (String.IsNullOrEmpty(prefix))
-            {
-                return null;
-            }
-            else
-            {
-                string val = GetValueStringFromLineWithPrefix(prefix, report);
-
-                if (String.IsNullOrEmpty(val))
-                {
-                    return null;
-                }
-                else
-                {
-                    decimal num = 0;
-                    //get rid of degrees (0176 or Alt+ 248), ms/sec, etc
-                    val = GetNumbers(val);
-                    if (decimal.TryParse(val, out num))
-                    {
-                        return num;
-                    }
-                    else
-                    {
-                        //Could not parse
-                        return null;
-                    }
-                }
-            }
-        }
-
-        public bool? GetBoolValueFromLineWithPrefix(string prefix, string report)
-        {
-            if (String.IsNullOrEmpty(prefix))
-            {
-                return null;
-            }
-            else
-            {
-                string val = GetValueStringFromLineWithPrefix(prefix, report);
-
-                if (String.IsNullOrEmpty(val))
-                {
-                    return null;
-                }
-                else
-                {
-                    //get rid of degrees (0176 or Alt+ 248), ms/sec, etc
-                    val = GetNumbers(val);
-                    if (String.IsNullOrEmpty(val))
-                    {
-                        return null;
-                    }
-                    else
-                    {
-                        if (val.Trim() == "1")
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-
-        private static string GetNumbers(string input)
-        {
-            if (String.IsNullOrEmpty(input))
-            {
-                return null;
-            }
-            else
-            {
-                //bool isNegative = input.Contains("-");
-                string val = new string((char[])input.Where(c => char.IsDigit(c) || c == '-' || c =='.').ToArray());
-                //if (isNegative) val = "-" + val;
-
-                return val;
-            }
-        }
-
-        public string GetValueStringFromLineWithPrefix(string prefix, string report)
-        {
-            string[] lines = report.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-            string result = lines.SingleOrDefault(l => l.StartsWith(prefix));
-            if(!String.IsNullOrEmpty(result))
-                result = result.Replace(":", "").Replace(" ", "");
-
-            return result;
-        }
+ 
 
         protected bool UpdateCurrenPositionWithDesired(bool suspendRefreshFromDevice = false)
         {
@@ -351,23 +225,20 @@ namespace CamSliderCommander
                 //do the move
                 moved = Send_Command_Position(DesiredPosition.Position, suspendRefreshFromDevice);
             }
-            if (moved && !suspendRefreshFromDevice)
-            {
-                UpdateCurrentPositionFromDevice();
-            }
             return moved;
         }
 
 
-        private bool Send_Command_Position(decimal position, bool suspendRefreshFromDevice = false)
+        private bool Send_Command_Position(double position, bool suspendRefreshFromDevice = false)
         {
             //
             if ((!CurrentSetup.SystemEnabled.HasValue || CurrentSetup.SystemEnabled.Value == true)  && !this.IsControlDisabled)
             {
                 DeviceComm.Send(ASCII_CommandPrefix_Position + position.ToString());
 
-                if(!suspendRefreshFromDevice)
-                    UpdateCurrentPositionFromDevice();
+                //Not doing this until we can do the command queueing or blocking on the serial comm
+                //if(!suspendRefreshFromDevice)
+                //    UpdateCurrentPositionFromDevice();
 
                 return true;
             }
@@ -387,7 +258,7 @@ namespace CamSliderCommander
         {
             return false;
         }
-        public virtual void GotoPosition(int position, bool suspendRefreshFromDevice = false)
+        public virtual void GotoPosition(double position, bool suspendRefreshFromDevice = false)
         {
             if (CurrentSetup.MaxPosition.HasValue && position > CurrentSetup.MaxPosition.Value)
                 DesiredPosition.Position = CurrentSetup.MaxPosition.Value;

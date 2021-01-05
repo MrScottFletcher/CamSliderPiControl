@@ -129,6 +129,7 @@
     <Compile Include="Isaac879SliderControl.cs" />
     <Compile Include="SliderControlBase.cs" />
     <Compile Include="SliderAxisState.cs" />
+    <Compile Include="SliderStateInfo.cs" />
     <Compile Include="SocketManager.cs" />
     <Compile Include="TestSender.cs" />
     <EmbeddedResource Include="Properties\CamSliderCommander.rd.xml" />

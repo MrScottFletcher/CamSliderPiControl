@@ -36,6 +36,11 @@ namespace CamSliderCommander
         public event CommErrorHandler CommError;
         public event CommInfoMessageHandler CommInfoMessage;
 
+        /// <summary>
+        /// The value from the device indicating it is ready for the next command.  Still need to implement this
+        /// </summary>
+        public string ASCII_READY_FOR_NEXT_COMMAND_INDICATOR { get; set; }
+
         Task _receiveLoopTask;
 
         public SocketManager(string bluetoothDeviceName)
@@ -334,7 +339,7 @@ namespace CamSliderCommander
                     }
                 }
             });
-            FireCommInfoMessage("Receive Loop creator method exit.");
+            FireCommInfoMessage("Listening...");
         }
 
         public async void Disconnect(string disconnectReason)

@@ -8,6 +8,6 @@ namespace CamSliderCommander
 {
     public class SliderAxisPositionInfo
     {
-        public decimal Position { get; set; }
+        public double Position { get; set; }
     }
 }
